@@ -8,7 +8,7 @@ const KEY = 'morning-journal:session';
  * discarded rather than half-adopted — version 1 held mood/energy/topic, which the
  * emotion-and-branch check-in replaced.
  */
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 interface Envelope {
   v: number;
@@ -54,7 +54,14 @@ export function todayKey(): string {
 }
 
 export function freshSession(): Session {
-  return { date: todayKey(), checkIn: null, promptId: null, text: '', stage: 'emotion' };
+  return {
+    date: todayKey(),
+    checkIn: null,
+    promptId: null,
+    text: '',
+    stage: 'home',
+    pendingRewardId: null,
+  };
 }
 
 /** Returns null if there is nothing stored, it is unreadable, from another schema, or another day. */
@@ -74,7 +81,8 @@ export function loadSession(): Session | null {
       checkIn: session.checkIn ?? null,
       promptId: session.promptId ?? null,
       text: typeof session.text === 'string' ? session.text : '',
-      stage: session.stage ?? 'emotion',
+      stage: session.stage ?? 'home',
+      pendingRewardId: session.pendingRewardId ?? null,
     };
   } catch {
     // Private mode, disabled storage, or corrupt JSON — start fresh rather than break.

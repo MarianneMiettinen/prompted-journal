@@ -14,7 +14,15 @@ export type BranchId =
 
 export type EmotionId = string;
 
-export type Stage = 'emotion' | 'questions' | 'journal' | 'meditation' | 'complete';
+export type Stage =
+  | 'home'
+  | 'emotion'
+  | 'questions'
+  | 'journal'
+  | 'spell' // reward for writing
+  | 'gong' // the meditation
+  | 'orb' // reward for stillness
+  | 'cupboard';
 
 export interface CheckIn {
   emotion: EmotionId;
@@ -30,4 +38,6 @@ export interface Session {
   promptId: string | null;
   text: string;
   stage: Stage;
+  /** The reward being revealed, kept so a refresh mid-reveal shows the same one. */
+  pendingRewardId: string | null;
 }

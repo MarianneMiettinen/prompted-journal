@@ -1,13 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Complete } from './components/Complete';
+import { Cupboard } from './components/Cupboard';
 import { EmotionPicker } from './components/EmotionPicker';
 import { FollowUp } from './components/FollowUp';
+import { GongScreen } from './components/GongScreen';
+import { Home } from './components/Home';
 import { Journal } from './components/Journal';
 import { LaunchHelp } from './components/LaunchHelp';
-import { Meditation } from './components/Meditation';
+import { RewardReveal } from './components/RewardReveal';
 import { findEmotion } from './data/emotions';
 import { getPromptText, selectPromptId } from './data/prompts';
-import type { EmotionId, Session } from './types';
+import { findReward, nextReward, type RewardKind } from './data/rewards';
+import type { EmotionId, Session, Stage } from './types';
+import {
+  loadCollection,
+  requestDurableStorage,
+  saveCollection,
+  type Collection,
+} from './utils/collection';
 import { clearTimers, freshSession, loadSession, saveSession } from './utils/storage';
 
 /** The two durations of the ritual. Change them here and nowhere else. */
@@ -18,25 +27,36 @@ export default function App() {
   const [session, setSession] = useState<Session>(() => {
     const stored = loadSession();
     if (stored) return stored;
-    // Nothing to resume (first visit, or a session from another day) — clear the
-    // timers too, so a new ritual starts with full ones.
     clearTimers();
     return freshSession();
   });
+  const [collection, setCollection] = useState<Collection>(loadCollection);
+  /** Earned in this sitting — highlighted on the shelf so they can be picked out. */
+  const [fresh, setFresh] = useState<string[]>([]);
+  /** Where the cupboard was opened from, so its button can say the right thing. */
+  const [cameFromHome, setCameFromHome] = useState(false);
 
-  // Every change is written straight through, so a refresh mid-ritual loses nothing.
   useEffect(() => {
     saveSession(session);
   }, [session]);
+
+  useEffect(() => {
+    saveCollection(collection);
+  }, [collection]);
+
+  useEffect(() => {
+    requestDurableStorage();
+  }, []);
 
   const updateText = useCallback((updater: (previous: string) => string) => {
     setSession((current) => ({ ...current, text: updater(current.text) }));
   }, []);
 
+  const goTo = (stage: Stage) => setSession((current) => ({ ...current, stage }));
+
   const handleEmotion = (emotion: EmotionId) => {
     setSession((current) => ({
       ...current,
-      // Keep the emotion, drop any answers that belonged to a different branch.
       checkIn: { emotion, q1: '', q2: '' },
       stage: 'questions',
     }));
@@ -50,30 +70,65 @@ export default function App() {
     });
   };
 
-  const goTo = (stage: Session['stage']) => setSession((current) => ({ ...current, stage }));
+  /** Conjures the next reward of a kind and moves to its reveal. */
+  const award = (kind: RewardKind, stage: Stage) => {
+    const collected = kind === 'spell' ? collection.spells : collection.orbs;
+    const reward = nextReward(kind, collected);
+    setSession((current) => ({ ...current, pendingRewardId: reward.id, stage }));
+  };
 
-  const restart = () => {
+  /** Shelves whatever is currently being revealed. */
+  const shelve = (next: Stage) => {
+    const reward = findReward(session.pendingRewardId ?? '');
+    if (reward) {
+      setCollection((current) =>
+        reward.kind === 'spell'
+          ? { ...current, spells: [...current.spells, reward.id] }
+          : { ...current, orbs: [...current.orbs, reward.id] },
+      );
+      setFresh((current) => [...current, reward.id]);
+    }
+    setSession((current) => ({ ...current, pendingRewardId: null, stage: next }));
+  };
+
+  const startOver = () => {
     clearTimers();
+    setFresh([]);
     setSession(freshSession());
   };
 
   const emotion = findEmotion(session.checkIn?.emotion ?? null);
+  const pending = findReward(session.pendingRewardId ?? '');
 
-  // An emotion that no longer exists in the data (renamed between deploys) sends the
-  // person back to the picker rather than into a screen with no questions.
-  const stage = session.stage !== 'emotion' && emotion === null ? 'emotion' : session.stage;
+  // Recover from any state that can't be rendered — a stage needing an emotion that isn't
+  // there, or a reveal with no reward — rather than showing a blank screen.
+  let stage = session.stage;
+  if (['questions', 'journal'].includes(stage) && !emotion) stage = 'emotion';
+  if ((stage === 'spell' || stage === 'orb') && !pending) stage = 'cupboard';
 
   return (
     <main className="app">
-      {stage === 'emotion' && (
+      {stage === 'home' && (
         <>
-          <EmotionPicker
-            initial={session.checkIn?.emotion ?? null}
-            onComplete={handleEmotion}
+          <Home
+            spellCount={collection.spells.length}
+            orbCount={collection.orbs.length}
+            onBegin={() => goTo('emotion')}
+            onOpenCupboard={() => {
+              setCameFromHome(true);
+              goTo('cupboard');
+            }}
           />
-          {/* Only on the opening screen — it must never interrupt the ritual itself. */}
           <LaunchHelp />
         </>
+      )}
+
+      {stage === 'emotion' && (
+        <EmotionPicker
+          initial={session.checkIn?.emotion ?? null}
+          onComplete={handleEmotion}
+          onBack={() => goTo('home')}
+        />
       )}
 
       {stage === 'questions' && emotion && (
@@ -84,21 +139,47 @@ export default function App() {
         />
       )}
 
-      {stage === 'journal' && (
+      {stage === 'journal' && emotion && (
         <Journal
+          emotion={emotion}
           prompt={getPromptText(session.promptId)}
           text={session.text}
           updateText={updateText}
-          onFinish={() => goTo('meditation')}
+          onFinish={() => award('spell', 'spell')}
           durationMs={JOURNAL_MINUTES * 60_000}
         />
       )}
 
-      {stage === 'meditation' && (
-        <Meditation onFinish={() => goTo('complete')} durationMs={MEDITATION_MINUTES * 60_000} />
+      {stage === 'spell' && pending && (
+        <RewardReveal reward={pending} onNext={() => shelve('gong')} />
       )}
 
-      {stage === 'complete' && <Complete onRestart={restart} />}
+      {stage === 'gong' && (
+        <GongScreen
+          onComplete={() => award('orb', 'orb')}
+          durationMs={MEDITATION_MINUTES * 60_000}
+        />
+      )}
+
+      {stage === 'orb' && pending && (
+        <RewardReveal reward={pending} onNext={() => shelve('cupboard')} />
+      )}
+
+      {stage === 'cupboard' && (
+        <Cupboard
+          collection={collection}
+          fresh={fresh}
+          closeLabel={cameFromHome ? '← Back to the desk' : 'Done for today ✦'}
+          onClose={() => {
+            if (cameFromHome) {
+              setCameFromHome(false);
+              goTo('home');
+            } else {
+              startOver();
+            }
+          }}
+        />
+      )}
     </main>
   );
 }
