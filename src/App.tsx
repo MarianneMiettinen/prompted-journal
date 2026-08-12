@@ -18,6 +18,7 @@ import {
   today,
   type Collection,
 } from './utils/collection';
+import { playTap } from './utils/sounds';
 import { clearTimers, freshSession, loadSession, saveSession } from './utils/storage';
 
 /** The two durations of the ritual. Change them here and nowhere else. */
@@ -47,6 +48,17 @@ export default function App() {
 
   useEffect(() => {
     requestDurableStorage();
+  }, []);
+
+  // One listener rather than a handler on every control. Covers the choice pills too, since
+  // they behave like buttons even though they are labels wrapping a radio.
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('button, .pill, .option')) playTap();
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
   }, []);
 
   const updateText = useCallback((updater: (previous: string) => string) => {

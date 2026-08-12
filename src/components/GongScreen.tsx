@@ -27,13 +27,15 @@ export function GongScreen({ onComplete, durationMs }: Props) {
     <div className={`screen screen--gong${glowing ? ' screen--gong-lit' : ''}`}>
       <div className="gong-head">
         <p className={`eyebrow${glowing ? ' eyebrow--violet' : ''}`}>
-          {timer.isFinished
-            ? 'Complete ✦'
-            : timer.isRunning
-              ? 'Hold the vibration'
-              : 'Aldric needs your help'}
+          {timer.isFinished ? 'Complete ✦' : timer.isRunning ? 'Meditating' : 'Meditate'}
         </p>
         <p className="gong-time">{timer.display}</p>
+        {timer.status === 'idle' && (
+          <p className="gong-instruction">
+            Focus your attention on your breath. If you notice you have got distracted, just
+            bring your attention back to the breath.
+          </p>
+        )}
       </div>
 
       <div className="gong-stage">
@@ -55,12 +57,12 @@ export function GongScreen({ onComplete, durationMs }: Props) {
       <div className="gong-foot">
         {timer.status === 'idle' && (
           <WizardSays>
-            I am weaving a powerful spell, but I cannot hold the vibration alone. Sit with the
-            gong a while — your stillness is the magic.
+            One minute of meditation. Strike the gong, close your eyes if you like, and follow
+            your breath — the stillness is the magic.
           </WizardSays>
         )}
 
-        {timer.isRunning && <p className="gong-breathe">Breathe. Be still.</p>}
+        {timer.isRunning && <p className="gong-breathe">Back to the breath.</p>}
 
         {timer.isFinished ? (
           <button type="button" className="button button--primary button--wide" onClick={onComplete}>
@@ -73,11 +75,11 @@ export function GongScreen({ onComplete, durationMs }: Props) {
         ) : (
           <>
             <button type="button" className="button button--primary button--wide" onClick={strike}>
-              {timer.status === 'idle' ? 'Strike the gong ✦' : 'Resume'}
+              {timer.status === 'idle' ? 'Strike the gong to begin ✦' : 'Resume'}
             </button>
             {timer.status === 'idle' && (
               <button type="button" className="button button--ghost button--wide" onClick={onComplete}>
-                Skip for today
+                Skip the meditation today
               </button>
             )}
           </>

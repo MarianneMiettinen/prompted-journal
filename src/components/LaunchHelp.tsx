@@ -61,56 +61,37 @@ export function LaunchHelp() {
 
   return (
     <aside className="launch">
-      <h2 className="launch-title">Make this easy to reach</h2>
-      <p className="launch-lede">
-        A morning ritual works better when it is one click away, not a tab you have to go
-        looking for.
-      </p>
+      <h2 className="launch-title">Save the app, to access it next time easily</h2>
 
       {desktop ? (
         <>
-          <ol className="launch-steps">
-            <li>
-              {installEvent ? (
-                <>
-                  <button type="button" className="button button--primary" onClick={install}>
-                    Install as an app
-                  </button>
-                  <span className="launch-note">
-                    It gets its own small window — no tabs, no address bar.
-                  </span>
-                </>
-              ) : (
-                <>
-                  <strong>Install it.</strong> In Chrome or Edge, open the <b>⋮</b> menu and
-                  choose <b>Install</b> — under <i>Cast, save and share</i> if you don’t see it
-                  straight away. It then opens in its own small window instead of a tab.
-                </>
-              )}
-            </li>
-            <li>
-              <strong>Pin it.</strong> Right-click the app on your taskbar and choose{' '}
-              <b>Pin to taskbar</b>, so it is there tomorrow morning.
-            </li>
-            <li>
-              <strong>Or just bookmark it.</strong> Press <kbd>Ctrl</kbd> + <kbd>D</kbd> to add
-              it to your favourites.
-            </li>
-          </ol>
+          {installEvent ? (
+            <button type="button" className="button button--primary button--wide" onClick={install}>
+              Save the app
+            </button>
+          ) : (
+            <ol className="launch-steps">
+              <li>
+                Open the <b>⋮</b> menu in your browser and pick <b>Install</b>.
+              </li>
+              <li>
+                Or press <kbd>Ctrl</kbd> + <kbd>D</kbd> to save it as a bookmark.
+              </li>
+            </ol>
+          )}
 
           <div className="launch-actions">
-            <button type="button" className="button button--quiet" onClick={openWindow}>
+            <button type="button" className="button button--ghost" onClick={openWindow}>
               Open in a small window
             </button>
             <button type="button" className="link-button" onClick={close}>
-              Don’t show this again
+              Hide this
             </button>
           </div>
 
           {popupBlocked && (
             <p className="launch-note" role="status">
-              Your browser blocked the window. Allow pop-ups for this site, or use the install
-              step above.
+              Your browser blocked the window. Allow pop-ups for this site, or save it instead.
             </p>
           )}
         </>
@@ -118,17 +99,14 @@ export function LaunchHelp() {
         <>
           <ol className="launch-steps">
             <li>
-              <strong>Add it to your home screen.</strong> Tap the <b>⋮</b> menu in Chrome, or
-              the <b>Share</b> button in Safari, then <b>Add to Home screen</b>.
+              Tap <b>Share</b>, then <b>Add to Home screen</b>.
             </li>
-            <li>
-              <strong>Open it from there.</strong> It runs full screen, like any other app.
-            </li>
+            <li>Open it from there, like any other app.</li>
           </ol>
 
           <div className="launch-actions">
             <button type="button" className="link-button" onClick={close}>
-              Don’t show this again
+              Hide this
             </button>
           </div>
         </>

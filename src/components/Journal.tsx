@@ -3,6 +3,7 @@ import { useTimer } from '../core/useTimer';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { JOURNAL_TIMER_KEY } from '../utils/storage';
 import { playGong } from '../utils/gong';
+import { playPageTurn, playPenStroke } from '../utils/sounds';
 import type { Emotion } from '../data/emotions';
 import { Wizard } from './Wizard';
 
@@ -45,6 +46,7 @@ export function Journal({ emotion, prompt, text, updateText, onFinish, durationM
 
   const finish = () => {
     speech.stop();
+    playPageTurn();
     onFinish();
   };
 
@@ -66,6 +68,12 @@ export function Journal({ emotion, prompt, text, updateText, onFinish, durationM
             {emotion.label} — {today}
           </p>
         </div>
+        {/* Points at the timer until it has been used. No words — just the hand. */}
+        {timer.status === 'idle' && (
+          <span className="timer-point" aria-hidden="true">
+            👉
+          </span>
+        )}
         <button
           type="button"
           className={`journal-timer${timer.isRunning ? ' journal-timer--running' : ''}`}
@@ -92,6 +100,8 @@ export function Journal({ emotion, prompt, text, updateText, onFinish, durationM
           placeholder="Start wherever you like…"
           onChange={(event) => {
             const { value } = event.target;
+            // Only on the way up: deleting shouldn't sound like writing.
+            if (value.length > text.length) playPenStroke();
             updateText(() => value);
           }}
           autoComplete="off"
@@ -154,6 +164,7 @@ export function Journal({ emotion, prompt, text, updateText, onFinish, durationM
           <p className="whisper-text">
             Take your time. Every word you write is a small act of courage.
           </p>
+          <p className="whisper-private">We don’t access your words. It’s private.</p>
         </div>
       </footer>
     </div>

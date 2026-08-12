@@ -11,7 +11,7 @@ export function Home({ spellCount, orbCount, onBegin, onOpenCupboard }: Props) {
   const total = spellCount + orbCount;
 
   return (
-    <div className="screen screen--centred">
+    <div className="screen screen--centred screen--home">
       <div className="sparkles" aria-hidden="true">
         {[0, 1, 2, 3, 4].map((i) => (
           <span key={i} className={`sparkle sparkle--${i}`}>
@@ -30,8 +30,8 @@ export function Home({ spellCount, orbCount, onBegin, onOpenCupboard }: Props) {
           by the desk.
         </h1>
         <p className="lede">
-          Name what you are feeling, write for a while, and sit with the gong. He will make
-          something of it.
+          Name what you are feeling, write for a while, then meditate for a minute. He will
+          make something of it.
         </p>
       </div>
 

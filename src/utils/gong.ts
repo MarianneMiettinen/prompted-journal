@@ -1,26 +1,4 @@
-type AudioContextCtor = typeof AudioContext;
-
-let ctx: AudioContext | null = null;
-
-/**
- * Created lazily so it is only ever constructed inside a user gesture — browsers
- * block (or immediately suspend) an AudioContext made on page load.
- */
-function getContext(): AudioContext | null {
-  if (ctx) return ctx;
-  const w = window as unknown as {
-    AudioContext?: AudioContextCtor;
-    webkitAudioContext?: AudioContextCtor;
-  };
-  const Ctor = w.AudioContext ?? w.webkitAudioContext;
-  if (!Ctor) return null;
-  try {
-    ctx = new Ctor();
-  } catch {
-    return null;
-  }
-  return ctx;
-}
+import { withAudio } from './audio';
 
 /** Inharmonic partials with unequal decay times — that unevenness is what reads as "gong". */
 const PARTIALS = [
@@ -36,10 +14,7 @@ const BASE_HZ = 110;
 
 /** Soft, slow-decaying gong. Safe to call when audio is unavailable — it just does nothing. */
 export function playGong(): void {
-  const ac = getContext();
-  if (!ac) return;
-
-  const strike = () => {
+  withAudio((ac) => {
     const now = ac.currentTime;
 
     const master = ac.createGain();
@@ -70,11 +45,5 @@ export function playGong(): void {
       osc.start(now);
       osc.stop(now + p.decay + 0.1);
     }
-  };
-
-  if (ac.state === 'suspended') {
-    ac.resume().then(strike).catch(() => undefined);
-  } else {
-    strike();
-  }
+  });
 }
