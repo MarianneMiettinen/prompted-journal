@@ -240,17 +240,19 @@ body {
 
 .says-label {
   margin: 0 0 0.25rem;
-  color: var(--gold);
-  font-size: 0.625rem;
+  color: #a97f1f;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
+/* Aldric is the voice of the product — his lines have to be comfortably readable, not
+   treated as fine print. */
 .says-text {
   margin: 0;
-  color: var(--ink-soft);
-  font-size: 0.8125rem;
+  color: var(--ink);
+  font-size: 1rem;
   line-height: 1.6;
 }
 
@@ -715,7 +717,7 @@ body {
 .whisper-label {
   margin: 0 0 0.1875rem;
   color: var(--gold);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -723,8 +725,8 @@ body {
 
 .whisper-text {
   margin: 0;
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.9375rem;
   line-height: 1.55;
 }
 
@@ -946,67 +948,131 @@ body {
 }
 
 .cupboard-inside {
-  display: flex;
-  /* The cupboard grows with the collection, so its inside scrolls. */
-  max-height: 60vh;
+  /* A magic cupboard: it keeps getting taller, so the inside scrolls. */
+  height: min(64vh, 34rem);
   overflow-y: auto;
+  padding: 0.25rem 0 0.75rem;
   background: #18122e;
   overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(232, 184, 75, 0.4) transparent;
 }
 
-.cupboard-divider {
-  width: 1px;
-  margin: 0.75rem 0;
-  background: rgba(154, 125, 80, 0.45);
+.cupboard-inside::-webkit-scrollbar {
+  width: 8px;
 }
 
-.shelf {
-  flex: 1;
-  min-width: 0;
-  padding: 0.875rem 0.5rem 0.75rem;
+.cupboard-inside::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: rgba(232, 184, 75, 0.35);
 }
 
-.shelf-title {
-  margin: 0;
+.cupboard-empty {
+  margin: 2rem 1rem;
   text-align: center;
-  color: rgba(232, 184, 75, 0.75);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.875rem;
+}
+
+/* ── A month on the shelves ───────────────────────────────────────────── */
+
+.month {
+  padding: 0.75rem 0 0.25rem;
+}
+
+.month + .month {
+  border-top: 1px solid rgba(232, 184, 75, 0.16);
+}
+
+.month-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  padding: 0 0.875rem 0.625rem;
+}
+
+.month-name {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+/* The month's tally — this is what makes one month comparable with the next. */
+.month-total {
+  margin-left: auto;
+  padding: 0.1875rem 0.5rem;
+  border: 1px solid rgba(232, 184, 75, 0.45);
+  border-radius: 999px;
+  color: var(--gold);
   font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  white-space: nowrap;
+}
+
+.month--locked .month-name,
+.month--locked .month-total {
+  color: rgba(255, 255, 255, 0.45);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.month-columns {
+  display: flex;
+  align-items: stretch;
+}
+
+.column {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0 0.5rem;
+}
+
+.column-divider {
+  width: 1px;
+  margin: 0.25rem 0 1rem;
+  background: rgba(154, 125, 80, 0.4);
+}
+
+.column-title {
+  margin: 0 0 0.625rem;
+  text-align: center;
+  color: rgba(232, 184, 75, 0.75);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
-.shelf--orb .shelf-title {
+.column--orb .column-title {
   color: rgba(164, 139, 250, 0.85);
 }
 
-.shelf-count {
-  margin: 0.125rem 0 0.75rem;
+.column-empty {
+  margin: 0 0 0.75rem;
+  flex: 1;
   text-align: center;
-  color: rgba(255, 255, 255, 0.34);
+  color: rgba(255, 255, 255, 0.28);
   font-size: 0.6875rem;
 }
 
-.shelf-rows {
+.column-items {
   display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-}
-
-.shelf-items {
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-end;
-  gap: 0.25rem;
-  margin-bottom: 0.5rem;
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-end;
+  gap: 0.75rem 0.5rem;
+  margin-bottom: 0.625rem;
 }
 
 .token {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3125rem;
-  min-width: 0;
+  gap: 0.25rem;
+  width: 4.25rem;
 }
 
 .token--new {
@@ -1030,23 +1096,42 @@ body {
   line-height: 1;
 }
 
-.token-body--empty {
-  border: 1px dashed rgba(255, 255, 255, 0.14);
-  background: none;
+/* Not yet found: the shape is shown, the name is not. */
+.token-body--locked {
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.03);
   box-shadow: none;
+  color: rgba(255, 255, 255, 0.28);
 }
 
 .token-name {
-  max-width: 5.5rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.6875rem;
   line-height: 1.2;
   text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.token-name--locked {
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .token--new .token-name {
-  color: var(--gold);
+  color: #fff;
   font-weight: 600;
+}
+
+/* The golden sign saying when it arrived. */
+.token-date {
+  padding: 0.0625rem 0.375rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f0c85e 0%, #d29a25 100%);
+  color: #2a1e05;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
 .plank {

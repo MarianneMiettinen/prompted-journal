@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { EMOTION_GROUPS } from '../data/emotions';
+import { PICKER_EMOTIONS } from '../data/emotions';
 import type { EmotionId } from '../types';
 import { WizardSays } from './Wizard';
 
@@ -34,34 +34,29 @@ export function EmotionPicker({ initial, onComplete, onBack }: Props) {
       </div>
 
       <div className="screen-bottom">
-        {EMOTION_GROUPS.map((group) => (
-          <fieldset className="group" key={group.title}>
-            <legend className="group-legend">
-              {group.title}
-              <span className="group-hint">{group.hint}</span>
-            </legend>
-            <div className="pill-grid">
-              {group.emotions.map((option) => (
-                <label
-                  key={option.value}
-                  className={`pill${emotion === option.value ? ' pill--on' : ''}`}
-                >
-                  <input
-                    type="radio"
-                    name="emotion"
-                    value={option.value}
-                    checked={emotion === option.value}
-                    onChange={() => setEmotion(option.value)}
-                  />
-                  <span className="pill-emoji" aria-hidden="true">
-                    {option.emoji}
-                  </span>
-                  <span className="pill-label">{option.label}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        ))}
+        <fieldset className="group">
+          <legend className="visually-hidden">How are you feeling right now?</legend>
+          <div className="pill-grid">
+            {PICKER_EMOTIONS.map((option) => (
+              <label
+                key={option.value}
+                className={`pill${emotion === option.value ? ' pill--on' : ''}`}
+              >
+                <input
+                  type="radio"
+                  name="emotion"
+                  value={option.value}
+                  checked={emotion === option.value}
+                  onChange={() => setEmotion(option.value)}
+                />
+                <span className="pill-emoji" aria-hidden="true">
+                  {option.emoji}
+                </span>
+                <span className="pill-label">{option.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
         <button
           type="button"

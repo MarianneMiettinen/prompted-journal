@@ -15,6 +15,7 @@ import {
   loadCollection,
   requestDurableStorage,
   saveCollection,
+  today,
   type Collection,
 } from './utils/collection';
 import { clearTimers, freshSession, loadSession, saveSession } from './utils/storage';
@@ -72,19 +73,20 @@ export default function App() {
 
   /** Conjures the next reward of a kind and moves to its reveal. */
   const award = (kind: RewardKind, stage: Stage) => {
-    const collected = kind === 'spell' ? collection.spells : collection.orbs;
+    const collected = (kind === 'spell' ? collection.spells : collection.orbs).map((e) => e.id);
     const reward = nextReward(kind, collected);
     setSession((current) => ({ ...current, pendingRewardId: reward.id, stage }));
   };
 
-  /** Shelves whatever is currently being revealed. */
+  /** Shelves whatever is currently being revealed, stamped with today's date. */
   const shelve = (next: Stage) => {
     const reward = findReward(session.pendingRewardId ?? '');
     if (reward) {
+      const earned = { id: reward.id, at: today() };
       setCollection((current) =>
         reward.kind === 'spell'
-          ? { ...current, spells: [...current.spells, reward.id] }
-          : { ...current, orbs: [...current.orbs, reward.id] },
+          ? { ...current, spells: [...current.spells, earned] }
+          : { ...current, orbs: [...current.orbs, earned] },
       );
       setFresh((current) => [...current, reward.id]);
     }
