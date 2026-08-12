@@ -80,6 +80,11 @@ export function Journal({ prompt, text, updateText, onFinish, durationMs }: Prop
           {speech.error}
         </p>
       )}
+      {speech.hint && (
+        <p className="notice notice--quiet" role="status">
+          {speech.hint}
+        </p>
+      )}
 
       <div className="toolbar">
         <div className="timer" role="timer" aria-label="Time left">
@@ -95,7 +100,11 @@ export function Journal({ prompt, text, updateText, onFinish, durationMs }: Prop
               aria-pressed={speech.listening}
             >
               <span aria-hidden="true">🎙</span>
-              {speech.listening ? 'Listening…' : 'Speak'}
+              {speech.status === 'requesting'
+                ? 'Starting…'
+                : speech.status === 'listening'
+                  ? 'Listening…'
+                  : 'Speak'}
             </button>
           ) : (
             <p className="unsupported">Voice input isn't available in this browser.</p>

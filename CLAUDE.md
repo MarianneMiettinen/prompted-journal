@@ -1,6 +1,7 @@
 # Morning Journal
 
-A short morning ritual: check-in → journaling prompt → timed writing → 1-minute meditation → done.
+A short morning ritual: name the feeling → two follow-up questions → a journaling prompt →
+timed writing → 1-minute meditation → done.
 
 ## Rules
 
@@ -15,15 +16,25 @@ A short morning ritual: check-in → journaling prompt → timed writing → 1-m
 
 ```
 src/
-  components/   CheckIn, ChoiceGroup, Journal, Meditation, Complete
+  components/   EmotionPicker, FollowUp, ChoiceGroup, Journal, Meditation, Complete
   core/         timer.ts, persistence.ts, useTimer.ts — copied from the wizard-timer
                 project. Treat as a shared library: fix bugs here, don't restyle it.
-  data/         options.ts (check-in choices), prompts.ts (curated prompt bank + selector)
+  data/         emotions.ts (31 emotions in 3 groups), questions.ts (two questions per
+                branch), prompts.ts (prompt bank + selector)
   hooks/        useSpeechRecognition
   utils/        gong.ts (Web Audio), storage.ts (session in localStorage)
-  types.ts      Mood / Energy / Topic / Stage / Session
+  types.ts      BranchId / EmotionId / Stage / CheckIn / Session
   App.tsx       owns Session state + stage routing + persistence
 ```
+
+### The check-in
+
+Each emotion belongs to a **branch** (`activated`, `low`, `self-critical`, `outward`, `bright`,
+`settled`, `neutral`). The branch decides which two follow-up questions get asked, so the
+questions change with the feeling. Adding an emotion means assigning it a branch — never
+inventing a new branch unless it earns its own pair of questions.
+
+Answer ids are globally unique (`out-person`, `low-weeks`) so a prompt can name one directly.
 
 - **Single source of truth**: `App.tsx` holds one `Session` object and writes it to `localStorage`
   on every change. Refreshing the page mid-ritual restores stage and journal text.
@@ -33,12 +44,20 @@ src/
   throttling, and resume across a reload. Never count down by decrementing.
 - **The two timers persist separately from the session**, under their own storage keys. Anything
   that starts a new ritual must call `clearTimers()`, or the next morning opens on a spent timer.
-- **Prompt selection is local scoring** over `prompts.ts` — no API. Prompts declare which
-  mood/energy/topic they suit; unmatched dimensions disqualify, matched dimensions score.
-  At least one criteria-free prompt always exists as a fallback.
+- **Session storage is versioned** (`SCHEMA_VERSION` in `storage.ts`). Change the `Session`
+  shape, bump the version — old stored sessions are discarded, never half-adopted.
+- **Prompt selection is local scoring** over `prompts.ts` — no API. A prompt lists the emotions,
+  branches and answers it suits; any listed dimension that doesn't match disqualifies it, and
+  matches add weight. Weights are set so a named-emotion prompt ties with a branch-plus-answer
+  prompt and ties break at random, which is what gives the same check-in some variety.
+  The branch-only prompts sit below that tie and act as insurance: they only surface if an
+  answer option ever exists with no prompt keyed to it.
 - **Voice input is optional and additive.** Final speech chunks are appended to the journal text;
   interim text is shown separately and never written into the field. If the browser has no
   Speech Recognition, the mic is hidden and everything else still works.
+- **Recognition language is pinned to `en-US`**, not `navigator.language`. On a Finnish machine
+  the browser default made the recogniser expect Finnish, and English speech produced no text
+  at all. If the app ever gets Finnish copy, this has to become a choice, not a constant.
 - **Audio only after a user gesture.** The `AudioContext` is created lazily on a button press.
 
 ## Durations

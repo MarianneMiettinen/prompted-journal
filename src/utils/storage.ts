@@ -3,6 +3,18 @@ import type { Session } from '../types';
 
 const KEY = 'morning-journal:session';
 
+/**
+ * Bump whenever the shape of Session changes. A stored session from an older schema is
+ * discarded rather than half-adopted — version 1 held mood/energy/topic, which the
+ * emotion-and-branch check-in replaced.
+ */
+const SCHEMA_VERSION = 2;
+
+interface Envelope {
+  v: number;
+  session: Session;
+}
+
 export const JOURNAL_TIMER_KEY = 'morning-journal:journal';
 export const MEDITATION_TIMER_KEY = 'morning-journal:meditation';
 
@@ -23,22 +35,27 @@ export function todayKey(): string {
 }
 
 export function freshSession(): Session {
-  return { date: todayKey(), checkIn: null, promptId: null, text: '', stage: 'checkin' };
+  return { date: todayKey(), checkIn: null, promptId: null, text: '', stage: 'emotion' };
 }
 
-/** Returns null if there is nothing stored, it is unreadable, or it is from another day. */
+/** Returns null if there is nothing stored, it is unreadable, from another schema, or another day. */
 export function loadSession(): Session | null {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<Session>;
-    if (!parsed || parsed.date !== todayKey()) return null;
+
+    const parsed = JSON.parse(raw) as Partial<Envelope>;
+    if (!parsed || parsed.v !== SCHEMA_VERSION) return null;
+
+    const session = parsed.session;
+    if (!session || session.date !== todayKey()) return null;
+
     return {
-      date: parsed.date,
-      checkIn: parsed.checkIn ?? null,
-      promptId: parsed.promptId ?? null,
-      text: typeof parsed.text === 'string' ? parsed.text : '',
-      stage: parsed.stage ?? 'checkin',
+      date: session.date,
+      checkIn: session.checkIn ?? null,
+      promptId: session.promptId ?? null,
+      text: typeof session.text === 'string' ? session.text : '',
+      stage: session.stage ?? 'emotion',
     };
   } catch {
     // Private mode, disabled storage, or corrupt JSON — start fresh rather than break.
@@ -48,7 +65,8 @@ export function loadSession(): Session | null {
 
 export function saveSession(session: Session): void {
   try {
-    localStorage.setItem(KEY, JSON.stringify(session));
+    const envelope: Envelope = { v: SCHEMA_VERSION, session };
+    localStorage.setItem(KEY, JSON.stringify(envelope));
   } catch {
     // Writing is best-effort; the ritual still works without persistence.
   }

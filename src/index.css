@@ -98,6 +98,39 @@ body {
   text-transform: uppercase;
 }
 
+/* Says how far through the check-in you are, in words — not just a shape. */
+.step {
+  margin: 0 0 0.25rem;
+  color: var(--accent);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.link-button {
+  align-self: flex-start;
+  min-height: var(--tap);
+  margin-left: -0.25rem;
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.9375rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  color: var(--accent);
+}
+
+.link-button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 /* — Check-in choices — */
 
 .choice-group {
@@ -110,6 +143,14 @@ body {
   padding: 0 0 0.75rem;
   font-size: 1.0625rem;
   font-weight: 600;
+}
+
+.choice-hint {
+  display: block;
+  margin-top: 0.125rem;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+  font-weight: 400;
 }
 
 .choice-options {

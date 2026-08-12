@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { CheckIn } from './components/CheckIn';
 import { Complete } from './components/Complete';
+import { EmotionPicker } from './components/EmotionPicker';
+import { FollowUp } from './components/FollowUp';
 import { Journal } from './components/Journal';
 import { Meditation } from './components/Meditation';
+import { findEmotion } from './data/emotions';
 import { getPromptText, selectPromptId } from './data/prompts';
-import type { CheckIn as CheckInAnswers, Session } from './types';
+import type { EmotionId, Session } from './types';
 import { clearTimers, freshSession, loadSession, saveSession } from './utils/storage';
 
 /** The two durations of the ritual. Change them here and nowhere else. */
@@ -30,13 +32,21 @@ export default function App() {
     setSession((current) => ({ ...current, text: updater(current.text) }));
   }, []);
 
-  const handleCheckIn = (answers: CheckInAnswers) => {
+  const handleEmotion = (emotion: EmotionId) => {
     setSession((current) => ({
       ...current,
-      checkIn: answers,
-      promptId: selectPromptId(answers),
-      stage: 'journal',
+      // Keep the emotion, drop any answers that belonged to a different branch.
+      checkIn: { emotion, q1: '', q2: '' },
+      stage: 'questions',
     }));
+  };
+
+  const handleAnswers = (q1: string, q2: string) => {
+    setSession((current) => {
+      if (!current.checkIn) return current;
+      const checkIn = { ...current.checkIn, q1, q2 };
+      return { ...current, checkIn, promptId: selectPromptId(checkIn), stage: 'journal' };
+    });
   };
 
   const goTo = (stage: Session['stage']) => setSession((current) => ({ ...current, stage }));
@@ -46,12 +56,28 @@ export default function App() {
     setSession(freshSession());
   };
 
-  // A stored stage without answers can only happen if storage was tampered with — recover quietly.
-  const stage = session.stage !== 'checkin' && !session.checkIn ? 'checkin' : session.stage;
+  const emotion = findEmotion(session.checkIn?.emotion ?? null);
+
+  // An emotion that no longer exists in the data (renamed between deploys) sends the
+  // person back to the picker rather than into a screen with no questions.
+  const stage = session.stage !== 'emotion' && emotion === null ? 'emotion' : session.stage;
 
   return (
     <main className="app">
-      {stage === 'checkin' && <CheckIn onComplete={handleCheckIn} />}
+      {stage === 'emotion' && (
+        <EmotionPicker
+          initial={session.checkIn?.emotion ?? null}
+          onComplete={handleEmotion}
+        />
+      )}
+
+      {stage === 'questions' && emotion && (
+        <FollowUp
+          emotion={emotion}
+          onBack={() => goTo('emotion')}
+          onComplete={handleAnswers}
+        />
+      )}
 
       {stage === 'journal' && (
         <Journal
@@ -64,10 +90,7 @@ export default function App() {
       )}
 
       {stage === 'meditation' && (
-        <Meditation
-          onFinish={() => goTo('complete')}
-          durationMs={MEDITATION_MINUTES * 60_000}
-        />
+        <Meditation onFinish={() => goTo('complete')} durationMs={MEDITATION_MINUTES * 60_000} />
       )}
 
       {stage === 'complete' && <Complete onRestart={restart} />}
