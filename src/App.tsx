@@ -3,6 +3,7 @@ import { Complete } from './components/Complete';
 import { EmotionPicker } from './components/EmotionPicker';
 import { FollowUp } from './components/FollowUp';
 import { Journal } from './components/Journal';
+import { LaunchHelp } from './components/LaunchHelp';
 import { Meditation } from './components/Meditation';
 import { findEmotion } from './data/emotions';
 import { getPromptText, selectPromptId } from './data/prompts';
@@ -65,10 +66,14 @@ export default function App() {
   return (
     <main className="app">
       {stage === 'emotion' && (
-        <EmotionPicker
-          initial={session.checkIn?.emotion ?? null}
-          onComplete={handleEmotion}
-        />
+        <>
+          <EmotionPicker
+            initial={session.checkIn?.emotion ?? null}
+            onComplete={handleEmotion}
+          />
+          {/* Only on the opening screen — it must never interrupt the ritual itself. */}
+          <LaunchHelp />
+        </>
       )}
 
       {stage === 'questions' && emotion && (

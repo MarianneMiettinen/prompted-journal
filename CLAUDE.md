@@ -60,6 +60,33 @@ Answer ids are globally unique (`out-person`, `low-weeks`) so a prompt can name 
   at all. If the app ever gets Finnish copy, this has to become a choice, not a constant.
 - **Audio only after a user gesture.** The `AudioContext` is created lazily on a button press.
 
+## Launching it
+
+The app is installable: `public/manifest.webmanifest` with `display: standalone`, plus PNG
+icons generated as a one-off (rounded square, sun over a horizon). Installed via Chrome or
+Edge it gets its own window with no tabs and no address bar — that *is* the desktop
+"popup window", and the same manifest gives a full-screen app on a phone home screen.
+
+`LaunchHelp` renders on the opening screen only, never mid-ritual, and disappears once it has
+nothing to say. It hides when:
+
+- the app is installed (`display-mode: standalone`, or `navigator.standalone` on iOS), or
+- it is already the popped-out window — detected by `window.name === POPUP_NAME`, because
+  Chrome reports `display-mode: browser` inside a popup, or
+- the person pressed "Don't show this again" (a flag in localStorage).
+
+Desktop vs mobile copy is chosen by `(hover: hover) and (pointer: fine)`, **not** by width —
+a 460px-wide desktop popup must still get the desktop instructions.
+
+If Chrome fires `beforeinstallprompt`, a one-click Install button replaces the written step.
+Written instructions are the fallback and always work, since Chrome can install any page.
+
+### Emoji
+
+Every emotion emoji must be a **single codepoint, Unicode 11 or earlier**. Windows 10's
+Segoe UI Emoji renders Unicode 13/14 emoji as empty boxes and splits ZWJ sequences like
+😮‍💨 into two glyphs. This bit us once; check on Windows 10 before adding one.
+
 ## Durations
 
 `JOURNAL_MINUTES` and `MEDITATION_MINUTES` in `src/App.tsx`. Change there, nowhere else.

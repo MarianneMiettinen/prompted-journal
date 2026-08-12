@@ -48,6 +48,20 @@ body {
   width: 100%;
   max-width: 34rem;
   padding: clamp(1.25rem, 5vw, 2.5rem) clamp(1rem, 5vw, 2rem) 3rem;
+  /* viewport-fit=cover is set for installed iOS, so keep clear of the notch and home bar. */
+  padding-left: max(clamp(1rem, 5vw, 2rem), env(safe-area-inset-left));
+  padding-right: max(clamp(1rem, 5vw, 2rem), env(safe-area-inset-right));
+  padding-top: max(clamp(1.25rem, 5vw, 2.5rem), env(safe-area-inset-top));
+  padding-bottom: max(3rem, env(safe-area-inset-bottom));
+}
+
+/* Installed, or in the popped-out window: the frame is the window itself, so give the
+   content the space back rather than padding it like a page. */
+@media (display-mode: standalone), (display-mode: window-controls-overlay) {
+  .app {
+    padding-top: max(1.5rem, env(safe-area-inset-top));
+    padding-bottom: max(1.75rem, env(safe-area-inset-bottom));
+  }
 }
 
 .visually-hidden {
@@ -432,6 +446,66 @@ body {
 
 .screen--complete .actions {
   justify-content: center;
+}
+
+/* — Launch help — */
+
+.launch {
+  margin-top: 2.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+}
+
+.launch-title {
+  margin: 0 0 0.375rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.launch-lede {
+  margin: 0 0 1rem;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+}
+
+.launch-steps {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.launch-steps b {
+  font-weight: 600;
+}
+
+.launch-note {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+}
+
+.launch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+kbd {
+  padding: 0.125rem 0.375rem;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--paper);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125em;
 }
 
 @media (prefers-reduced-motion: reduce) {

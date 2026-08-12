@@ -2,6 +2,11 @@ import type { BranchId, EmotionId } from '../types';
 
 export interface Emotion {
   value: EmotionId;
+  /**
+   * Single codepoint, Unicode 11 or earlier. Windows 10's Segoe UI Emoji has no glyphs for
+   * Unicode 13/14 emoji (they render as empty boxes) and does not compose ZWJ sequences like
+   * 😮‍💨 (they split into two glyphs). Check any new emoji on Windows 10 before adding it.
+   */
   emoji: string;
   label: string;
   branch: BranchId;
@@ -30,7 +35,7 @@ export const EMOTION_GROUPS: EmotionGroup[] = [
       { value: 'sad', emoji: '😔', label: 'Sad', branch: 'low' },
       { value: 'anxious', emoji: '😰', label: 'Anxious', branch: 'activated' },
       { value: 'angry', emoji: '😠', label: 'Angry', branch: 'outward' },
-      { value: 'tired', emoji: '😮‍💨', label: 'Tired', branch: 'low' },
+      { value: 'tired', emoji: '😪', label: 'Tired', branch: 'low' },
     ],
   },
   {
@@ -43,7 +48,7 @@ export const EMOTION_GROUPS: EmotionGroup[] = [
       { value: 'inspired', emoji: '✨', label: 'Inspired', branch: 'bright' },
       { value: 'grateful', emoji: '🙏', label: 'Grateful', branch: 'settled' },
       { value: 'content', emoji: '🍃', label: 'Content', branch: 'settled' },
-      { value: 'loved', emoji: '🫶', label: 'Loved', branch: 'settled' },
+      { value: 'loved', emoji: '🥰', label: 'Loved', branch: 'settled' },
       { value: 'relieved', emoji: '😅', label: 'Relieved', branch: 'settled' },
     ],
   },
@@ -55,17 +60,17 @@ export const EMOTION_GROUPS: EmotionGroup[] = [
       { value: 'stressed', emoji: '😖', label: 'Stressed', branch: 'activated' },
       { value: 'restless', emoji: '😬', label: 'Restless', branch: 'activated' },
       { value: 'lonely', emoji: '🥺', label: 'Lonely', branch: 'low' },
-      { value: 'numb', emoji: '🫥', label: 'Numb', branch: 'low' },
+      { value: 'numb', emoji: '😶', label: 'Numb', branch: 'low' },
       { value: 'hurt', emoji: '💔', label: 'Hurt', branch: 'low' },
       { value: 'disappointed', emoji: '😞', label: 'Disappointed', branch: 'low' },
       { value: 'insecure', emoji: '🙃', label: 'Insecure', branch: 'self-critical' },
       { value: 'embarrassed', emoji: '😳', label: 'Embarrassed', branch: 'self-critical' },
-      { value: 'ashamed', emoji: '😶‍🌫️', label: 'Ashamed', branch: 'self-critical' },
+      { value: 'ashamed', emoji: '😓', label: 'Ashamed', branch: 'self-critical' },
       { value: 'guilty', emoji: '😟', label: 'Guilty', branch: 'self-critical' },
       { value: 'jealous', emoji: '😒', label: 'Jealous', branch: 'outward' },
-      { value: 'envious', emoji: '🫤', label: 'Envious', branch: 'outward' },
+      { value: 'envious', emoji: '👀', label: 'Envious', branch: 'outward' },
       { value: 'frustrated', emoji: '😑', label: 'Frustrated', branch: 'outward' },
-      { value: 'resentful', emoji: '😾', label: 'Resentful', branch: 'outward' },
+      { value: 'resentful', emoji: '😤', label: 'Resentful', branch: 'outward' },
       { value: 'confused', emoji: '😕', label: 'Confused', branch: 'neutral' },
     ],
   },

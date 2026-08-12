@@ -27,6 +27,25 @@ export function clearTimers(): void {
   createTimerStorage(MEDITATION_TIMER_KEY).clear();
 }
 
+const HELP_KEY = 'morning-journal:launch-help-dismissed';
+
+/** Whether the launch hints have been turned off for good. Never nag twice. */
+export function readLaunchHelpDismissed(): boolean {
+  try {
+    return localStorage.getItem(HELP_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function writeLaunchHelpDismissed(value: boolean): void {
+  try {
+    localStorage.setItem(HELP_KEY, String(value));
+  } catch {
+    // Losing this flag only means the hints show again. Not worth an error.
+  }
+}
+
 /** Local calendar date, not UTC — the ritual is tied to the user's morning. */
 export function todayKey(): string {
   const d = new Date();
